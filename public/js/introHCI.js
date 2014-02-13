@@ -26,7 +26,25 @@ function addProjectDetails(e) {
 	// get rid of 'project' from the front of the id 'project3'
 	var idNumber = projectID.substr('project'.length);
 
-	console.log("User clicked on project " + idNumber);
+	var url = '/project/' + idNumber;
+	$.get(url, addResponse);
+}
+
+var id;
+
+function addResponse(response) {
+	id = response['id'];	
+	var query = $('#project' + id).find('p').text();
+	var details = $('#project' + id).find('.' + 'details');
+	var projectHTML =  '<img src="' + response['image'] + '" class="detailsImage">' + 
+	'<p><strong>Due date: </strong>' + response['date'] + '</p>' + 
+	'<p>' + response['summary'] + '</p>';
+
+	details.html(projectHTML);
+
+	var url = '<script src="https://gdata.youtube.com/feeds/api/videos?alt=json-in-script&key=AIzaSyB1BoCj7vOafVodCxK1h3JQh26OfYpHauY&callback=processYT&fields=entry&q=' + encodeURIComponent(query) + '"></script>';
+	$('body').append(url);
+
 }
 
 /*
@@ -34,5 +52,20 @@ function addProjectDetails(e) {
  * and apply it
  */
 function randomizeColors(e) {
-	console.log("User clicked on color button");
+	$.get('/palette', addColors);
+}
+
+function addColors(response) {
+	var colors = response['colors']['hex'];
+	$('body').css('background-color', colors[0]);
+	$('.thumbnail').css('background-color', colors[1]);
+	$('h1, h2, h3, h4, h5, h5').css('color', colors[2]);
+	$('p').css('color', colors[3]);
+	$('.project img').css('opacity', .75);
+}
+
+function processYT(response) {
+	var entries = response['feed']['entry'];
+	var videoId = entries[0]['id']['$t'].substr('http://gdata.youtube.com/feeds/api/videos/'.length);
+	$('#project' + id).find('.details').append('<iframe src="http://www.youtube.com/embed/' + videoId + '"></iframe>');
 }
